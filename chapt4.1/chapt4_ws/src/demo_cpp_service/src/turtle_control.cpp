@@ -1,0 +1,99 @@
+#include <rclcpp/rclcpp.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <turtlesim/msg/pose.hpp>
+#include <chapt4_interfaces/srv/patrol.hpp>
+#include <cmath>
+
+using Patrol = chapt4_interfaces::srv::Patrol;
+
+class TurtleController : public rclcpp::Node
+{
+    private:
+        rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
+        rclcpp::Subscription<turtlesim::msg::Pose>::SharedPtr subsciption_;
+        rclcpp::Service<Patrol>::SharedPtr patrol_server_;
+        double k_{1.0};
+        double max_speed_{3.0};
+        float target_x_ = 6.0f;
+        float target_y_ = 6.0f;
+
+    public:
+    TurtleController() : rclcpp::Node("turtle_controler")
+    {
+        // 创建巡逻服务
+        patrol_server_ = this->create_service<Patrol>(
+            "patrol",
+            [this](const std::shared_ptr<Patrol::Request> request,
+                   std::shared_ptr<Patrol::Response> response)
+            {
+                if ((0.0f < request->target_x && request->target_x < 12.0f) &&
+                    (0.0f < request->target_y && request->target_y < 12.0f))
+                {
+                    this->target_x_ = request->target_x;
+                    this->target_y_ = request->target_y;
+                    response->result = Patrol::Response::SUCCESS; // 若你srv里没有这个枚举，改成true/false
+                }
+                else
+                {
+                    response->result = Patrol::Response::FAIL; // 同上
+                }
+            }
+        );
+
+        // 创建速度发布者和位置订阅者
+        publisher_ = this->create_publisher<geometry_msgs::msg::Twist>("turtle1/cmd_vel", 10);
+        subsciption_ = this->create_subscription<turtlesim::msg::Pose>(
+            "turtle1/pose",
+            10,
+            std::bind(&TurtleController::pose_callback, this, std::placeholders::_1)
+        );
+    }
+
+    private:
+        void pose_callback(const turtlesim::msg::Pose::SharedPtr pose)
+        {
+            //1.获取当前乌龟位置
+            auto current_x = pose->x;
+            auto current_y = pose->y;
+            auto message = geometry_msgs::msg::Twist();
+            RCLCPP_INFO(this->get_logger(), "当前x:%.2f,当前y:%.2f", current_x, current_y);
+
+            //2.计算与目标点的距离
+            auto distance = std::sqrt(std::pow((target_x_ - current_x), 2) + std::pow((target_y_ - current_y), 2));
+            RCLCPP_INFO(this->get_logger(), "距离目标点的距离:%.2f", distance);
+
+            //3.计算角度差
+            auto angle_to_target = std::atan2(target_y_ - current_y, target_x_ - current_x);
+            auto angle_diff = angle_to_target - pose->theta;
+            RCLCPP_INFO(this->get_logger(), "角度差:%.2f", angle_diff);
+
+            //4.计算线速度和角速度
+            if (distance > 0.1)
+            {
+                if (std::fabs(angle_diff) > 0.1)
+                {
+                    message.angular.z = angle_diff; // 你原来写fabs会丢方向，这里保留正负更合理
+                }
+                else
+                {
+                    message.linear.x = k_ * distance;
+                }
+            }
+
+            //5.限制最大值并发布速度
+            if (message.linear.x > max_speed_)
+            {
+                message.linear.x = max_speed_;
+            }
+            publisher_->publish(message);
+        }
+};
+
+int main(int argc, char* argv[])
+{
+    rclcpp::init(argc, argv);
+    auto controller = std::make_shared<TurtleController>();
+    rclcpp::spin(controller);
+    rclcpp::shutdown();
+    return 0;
+}

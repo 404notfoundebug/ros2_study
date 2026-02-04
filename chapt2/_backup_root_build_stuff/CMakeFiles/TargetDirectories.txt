@@ -1,0 +1,6 @@
+/home/nf404/chapt2/CMakeFiles/ros2_cpp_node.dir
+/home/nf404/chapt2/CMakeFiles/uninstall.dir
+/home/nf404/chapt2/CMakeFiles/ros2_cpp_uninstall.dir
+/home/nf404/chapt2/CMakeFiles/test.dir
+/home/nf404/chapt2/CMakeFiles/edit_cache.dir
+/home/nf404/chapt2/CMakeFiles/rebuild_cache.dir
