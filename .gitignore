@@ -9,3 +9,6 @@ log/
 # OS
 *.swp
 *.log
+
+.git_broken/
+.git_broken2/
