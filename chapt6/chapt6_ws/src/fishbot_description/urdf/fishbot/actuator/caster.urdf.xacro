@@ -33,17 +33,22 @@
         </link>
 
     <!-- 机器人的关节，用于组合机器人的部件 -->
-    <joint name="${caster_name}_joint" type="fixed">
-        <origin xyz="${xyz}" rpy="0.0 0.0 0.0"/>
-        <parent link="base_link"/>
-        <child link="${caster_name}_link"/>
-        <axis xyz="0.0 1.0 0.0"/>
-    </joint>
-    <xacro:sphere_inertia m="0.05" r="0.016" />
+        <joint name="${caster_name}_joint" type="fixed">
+            <origin xyz="${xyz}" rpy="0.0 0.0 0.0"/>
+            <parent link="base_link"/>
+            <child link="${caster_name}_link"/>
+            <axis xyz="0.0 1.0 0.0"/>
+        </joint>
+
+        <gazebo reference="${caster_name}_link">
+            <mu1 value="0.0"/>
+            <mu2 value="0.0"/>
+            <kp value="1000000000.0"/>
+            <kd value="1.0"/>
+        </gazebo>
+
+        <xacro:sphere_inertia m="0.05" r="0.016" />
     </xacro:macro>
-
-
-
 </robot>
 
 
