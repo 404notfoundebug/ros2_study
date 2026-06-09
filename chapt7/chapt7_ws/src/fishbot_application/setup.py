@@ -13,21 +13,14 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='nf404',
-    maintainer_email='188126925@qq.com',
+    maintainer='fishros',
+    maintainer_email='87068644+fishros@users.noreply.github.com',
     description='TODO: Package description',
-    license='Apache-2.0',
-    extras_require={
-        'test': [
-            'pytest',
-        ],
-    },
+    license='TODO: License declaration',
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "init_robot_pose=fishbot_application.init_robot_pose:main",
-            "get_robot_pose=fishbot_application.get_robot_pose:main",
-            "nav_to_pose=fishbot_application.get_robot_pose:main",
-            "waypoint_follow=fishbot_application.waypoint_follow:main",
+            'init_robot_pose=fishbot_application.init_robot_pose:main',
         ],
     },
 )
